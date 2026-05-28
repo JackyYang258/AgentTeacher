@@ -96,7 +96,13 @@ Bad: a single thread spinning a counter. Shows threads, not the GIL.
 
 ### Mode B · Structured pseudocode
 
-**When:** training algorithms (GRPO, PPO, DPO, RLHF), model architectures (MoE, attention variants, Mamba), distributed protocols (Paxos, Raft), and any concept whose runnable form would drag in a model + optimizer + dataloader. The concept is *the wiring*, not a function you call.
+**When:** the concept's value is in the wiring, state, or control flow — not in being runnable. Three flavors based on concept domain (full rules in [`code-style-for-teaching.md`](code-style-for-teaching.md) §10):
+
+- **Flavor 1 — DL** (architectures, training algorithms, kernel concepts). PyTorch syntax + tensor shape annotations. Examples: MoE, GRPO, FlashAttention.
+- **Flavor 2 — Protocols / state machines.** Named participants + message arrows + state transitions. Examples: Raft, TCP, OAuth.
+- **Flavor 3 — Complex algorithms / data structures.** Code + stated invariants + concrete trace. Examples: B+ tree, union-find.
+
+The common case across all three: the runnable form would drag in scaffolding (model + optimizer + dataloader, network setup, full database) that buries the concept.
 
 **Rules:**
 

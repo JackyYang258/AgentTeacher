@@ -65,25 +65,36 @@ One or two sentences. Lead with **the problem the concept solves**, not what it 
 
 The default is a 5–20 line **runnable** example: pasteable into a REPL, no external dependencies, prints visible output. This is the right form for language features (closures, generators), small algorithms (binary search, memoization), and APIs (regex, requests).
 
-But some concepts cannot fit in runnable code — and trying to force them there is the failure mode. A training algorithm like GRPO involves a full model, an optimizer, a reward function, and a dataset; getting any of those to actually run buries the algorithm under setup. An architecture like Mixture of Experts is about *how the pieces are wired*, not a function you call. For these, switch to **structured pseudocode**:
+But some concepts cannot fit in runnable code — and trying to force them there is the failure mode. For these, switch to **structured pseudocode** (Mode B). Mode B has three flavors based on what the concept is about:
 
-- Still valid Python / PyTorch syntax. The reader's eye reads it as code, not prose. Never use `FOR each token DO …` natural-language pseudocode — that's a regression.
+**Flavor 1 — DL architectures and training algorithms.** PyTorch syntax with tensor shape annotations on every line where shape changes. Marquee examples: Transformer block, MoE, GRPO, FlashAttention.
+
+**Flavor 2 — Protocols and state machines.** Named participants (`leader`, `follower`), message arrows, state transitions. Marquee examples: Raft AppendEntries, TCP three-way handshake, OAuth flow.
+
+**Flavor 3 — Complex algorithms and data structures.** Control flow with explicit invariants stated, plus a concrete trace through a small input. Marquee examples: B+ tree insert, union-find with path compression, quicksort.
+
+**All three flavors share:**
+
+- Valid syntax — real Python / PyTorch / pseudocode notation, never natural-language `FOR each token DO …`.
 - Mark the block clearly: `# pseudocode — illustrative, not runnable` at the top.
-- Drop boilerplate: imports, `class Foo(nn.Module):`, dataloader setup, distributed init. Whatever is not the concept.
-- **Annotate tensor shapes inline**: `# [B, T, D]`, `# [B, T, n_experts]`. For architecture and algorithm lessons, shapes are the load-bearing part of the lesson — without them the code reads as noise.
-- Keep control flow real: every `for`, `if`, `mask = ...`, `topk(...)`, `softmax(...)` must appear. That's the algorithm. Don't elide it.
-- Reference unimplemented helpers by speaking name: `advantages = compute_grpo_advantages(rewards)` is fine — do not expand a helper unless the helper *is* the concept being taught.
+- Drop scaffolding: imports, class boilerplate, dataloader setup, distributed init — whatever is not the concept.
+- **Track what changes** at every step. The notation depends on the flavor: tensor shapes for DL (`# [B, T, D]`), participant state for protocols (`leader.commitIndex 12 → 14`), data state for algorithms (`arr = [3, 1, 4, 1, 5]` → `[3, 1, 1] [4] [5]`). State tracking is load-bearing, not decoration — without it the reader has to mentally re-derive what you should have shown.
+- Keep control flow real: every `for`, `if`, `mask = ...`, `topk(...)` must appear. That's the algorithm. Don't elide it.
+- Reference unimplemented helpers by speaking name: `advantages = compute_grpo_advantages(rewards)` is fine — do not expand a helper unless the helper *is* the concept.
+
+**For algorithm concepts in Mode A** (Flavor 3-shaped concepts that are still small enough to be runnable, e.g. binary search, mergesort): include a **trace block** right after the L2 code — run the algorithm on a concrete tiny input (5–10 elements) and show 3–6 intermediate states. The trace is often more lesson-bearing than the code itself. See [`references/code-style-for-teaching.md`](references/code-style-for-teaching.md) §11.
 
 #### Which form to pick
 
 | Signal | Form |
 |---|---|
-| Concept is a language feature, small algorithm, or single API | Runnable |
-| Concept needs a full model, optimizer, or dataset to demonstrate | Pseudocode |
-| Concept is "how these pieces wire together" rather than "how this function computes" | Pseudocode |
-| Concept is a published algorithm referenced by name (GRPO, PPO, MoE, FlashAttention, Mamba) | Pseudocode |
+| Concept is a language feature, small algorithm, or single API | Runnable (Mode A) |
+| Concept is a small algorithm where the *trace* teaches more than the code | Runnable (Mode A) + trace block |
+| Concept needs a full model, optimizer, or dataset to demonstrate | Pseudocode (Mode B Flavor 1) |
+| Concept is a published DL algorithm / architecture (GRPO, MoE, FlashAttention, Mamba) | Pseudocode (Mode B Flavor 1) |
+| Concept is a distributed protocol (Paxos, Raft, 2PC) with multiple participants | Pseudocode (Mode B Flavor 2) |
+| Concept is a complex data structure (B+ tree, red-black tree) where the invariant is the lesson | Pseudocode (Mode B Flavor 3) |
 | Runnable version would exceed ~30 lines or need pip-installed deps the reader doesn't have | Pseudocode |
-| Concept is a distributed protocol (Paxos, Raft, 2PC) with multiple participants | Pseudocode |
 
 #### Code style rules (both modes)
 
@@ -135,9 +146,51 @@ Format per question:
 
 Read [references/teaching-method.md](references/teaching-method.md) §L6 for examples of good vs. bad test questions for closures, MoE, and other concepts.
 
+## Step 2.5 · Optional enrichments
+
+Eight optional modules attach to the spine when the concept's nature warrants. They handle what a plain six-layer lesson can't easily carry: canonical formulas, design choices, famous cousins, dependency chains, classic misconceptions, charts, and invariants the concept guarantees.
+
+The framework was originally tuned for **DL/ML concepts** (where the heaviest enrichment use lives), but several fit broader CS naturally: **data structures** (E2 trace, E3, E4, E5, E8), **distributed protocols** (E2 state, E3, E7 sequence diagrams, E8), **complex algorithms** (E2 trace, E3, E8).
+
+**Concept-driven, not concept-default.** Attention deserves 5; B+ tree deserves 4; tensor broadcasting deserves 1; closures deserve 0. **If you're unsure whether an enrichment fits, skip it.** Padding hurts more than missing helps.
+
+**Plain language features get the plain six-layer spine.** Don't force a cousin matrix onto closures or a design rationale onto generators — these are tools for designed-on-purpose components, not for language constructs.
+
+| Module | Trigger condition | Where it attaches |
+|---|---|---|
+| **E1 · Math tier** (canonical formula or Big-O recurrence) | Concept has a formula practitioners write down | Between L1 (intuition) and L2 (code) |
+| **E2 · State tracking** (shapes for DL, participant state for protocols, data trace for algorithms) | Mode B is selected | L2, L3 |
+| **E3 · Design rationale** | Concept has 2+ designed-on-purpose choices worth justifying | Between L3 and L4 |
+| **E4 · Cousin matrix** | Concept has a famous "vs" cousin (BN vs LN, GRPO vs PPO, TCP vs UDP, …) | L5 |
+| **E5 · Prerequisites + variants** | Concept sits in a clear dependency chain | L5 |
+| **E6 · Misconception list** | Concept has 2+ classic misconceptions of equal prevalence | L4 expands from single-trap to list |
+| **E7 · Visualization** | A chart, state machine, or sequence diagram saves 200 words | L2 or L4 |
+| **E8 · Invariants** | Concept is built around stated invariants (data structures, protocols, type systems) | Between L3 and L4 |
+
+**Decision checklist** (run after picking the lesson's Mode but before writing it):
+
+1. Mode B? → E2 always on (in the flavor matching the concept domain).
+2. Canonical formula or Big-O recurrence? → E1.
+3. 2+ designed choices worth justifying? → E3.
+4. Famous "vs" cousin? → E4.
+5. Clear dependency chain (named prereqs and variants)? → E5.
+6. 2+ classic misconceptions? → E6; else L4 stays single-trap.
+7. Chart / state machine / sequence diagram saves 200 words? → E7.
+8. Concept has stated invariants it guarantees? → E8.
+
+**Hard cap:** no lesson uses more than 5 enrichments. **Hard floor:** if zero fire, deliver a plain six-layer lesson — that's the normal case for language features and most simple algorithms.
+
+Read [references/enrichments.md](references/enrichments.md) for the per-module playbook with good/bad examples (DL and non-DL), decision rules, and a calibration table of which enrichments fire for which canonical concepts (attention, BN, MoE, Raft, B+ tree, …).
+
 ## Length budget
 
-A single concept lesson should fit in one screen of focused reading — roughly **150–400 words of prose** for L1–L5, plus the code blocks, plus 2–3 short test questions in L6. If a concept is too big for that (e.g. "explain the transformer architecture"), split: deliver one lesson on the smallest meaningful sub-concept first, then offer "want me to do attention next, or positional encoding?" Don't try to compress a 3000-word concept into one pass.
+A plain six-layer lesson should fit in one screen of focused reading — roughly **150–400 words of prose** for L1–L5, plus the code blocks, plus 2–3 short test questions in L6.
+
+A lesson with **2–3 enrichments fired** can run to **400–700 words** plus code blocks. This is fine — the extra words are paying for the design rationale, the cousin table, the prerequisite map, or the invariant list, all of which earn their space.
+
+A lesson with **5 enrichments** (attention or Raft is the canonical case) can run to **800–1200 words**. At this length, consider splitting into multiple lessons (the user can ask follow-ups for the parts they want deeper).
+
+If a concept is too big regardless (e.g. "explain the transformer architecture"), split it: deliver one lesson on the smallest meaningful sub-concept first, then offer "want me to do attention next, or positional encoding?" Don't try to compress a 3000-word concept into one pass.
 
 ## Tone
 

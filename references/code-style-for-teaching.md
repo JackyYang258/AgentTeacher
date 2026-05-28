@@ -237,13 +237,19 @@ If L1 says "futexes let userspace handle the fast path of locking" and L2 starts
 
 ---
 
-## 10. Pseudocode for architectures and training algorithms
+## 10. Pseudocode for wiring, state, and control flow
 
-This section is the rule book for when the concept is a *system* (Mixture of Experts, FlashAttention, the Transformer block) or a *training algorithm* (GRPO, PPO, DPO, RLHF). Runnable code is the wrong tool here — you'd write 60 lines of `nn.Module` scaffolding and the algorithm would be 8 of them. Structured pseudocode reverses that ratio.
+This section is the rule book for **Mode B** — structured pseudocode. The concept's value is in **how the pieces are wired**, the **state at each step**, or the **control flow** — not in being runnable. Trying to make it runnable buries the lesson under setup (60 lines of `nn.Module` scaffolding to demonstrate an 8-line algorithm).
+
+Three flavors of Mode B, by concept domain:
+
+- **Flavor 1 — DL architectures and training algorithms** (MoE, FlashAttention, Transformer, GRPO, PPO). PyTorch syntax with **tensor shape annotations** as the load-bearing state.
+- **Flavor 2 — Distributed protocols and state machines** (Raft, Paxos, TCP, OAuth). Named participants, message arrows, **participant state** transitions.
+- **Flavor 3 — Complex algorithms and data structures** (B+ tree, union-find, recursive descent parser). Control flow with **invariants** stated and a **concrete data trace** on a small input.
 
 ### What pseudocode means here
 
-It does **not** mean prose-in-uppercase ("FOR each token IF gate score > threshold..."). That style throws away the precision that makes code worth reading. It means **real Python/PyTorch syntax**, with the parts that aren't the concept stripped out and the parts that *are* the concept annotated heavily.
+It does **not** mean prose-in-uppercase ("FOR each token IF gate score > threshold..."). That style throws away the precision that makes code worth reading. It means **real syntax** (Python / PyTorch / pseudocode notation), with the parts that aren't the concept stripped out and the parts that *are* the concept annotated heavily.
 
 ### The four rules
 
@@ -257,9 +263,15 @@ Top of the code block, one comment line:
 
 The reader needs to know not to copy-paste it into a notebook expecting it to work. This one line prevents 90% of the "I tried to run your example and got an error" follow-ups.
 
-#### Rule 2 — Annotate every shape that changes
+#### Rule 2 — Annotate every state change
 
-This is the single most important rule. For architecture and training-algorithm concepts, **shape transitions are the load-bearing part of the lesson**. Skip them and the code reads as noise.
+This is the single most important rule, and it generalizes across all three Mode B flavors. The **state** being tracked depends on the flavor:
+
+- **Flavor 1 (DL):** tensor shapes. `[B, T, D]`, `[B, T, E]`, `[N, D]`.
+- **Flavor 2 (protocols):** participant state. `leader.commitIndex 12 → 14`, `follower.log [..., e12] → [..., e12, e13]`.
+- **Flavor 3 (algorithms):** data state at trace milestones. `arr = [3, 1, 4, 1, 5]` → `[3, 1, 1] [4] [5]` after partition.
+
+For all three, **state transitions are the load-bearing part of the lesson**. Skip them and the code reads as noise.
 
 Conventions:
 
@@ -350,7 +362,84 @@ Three nested loops in a vectorized architecture are a *mental model bug*: MoE is
 
 ---
 
-## 11. Working through a worked example
+## 11. Trace blocks for algorithm concepts
+
+For algorithm concepts — sorting, searching, traversal, divide-and-conquer, dynamic programming, graph algorithms — **the most useful single artifact is often the trace**: running the algorithm on a small concrete input and showing 3–6 intermediate states. The trace is what makes the algorithm click; the code by itself is just notation.
+
+Use a trace block when:
+
+- The concept is an algorithm (the code *does* something, not just *is* something).
+- The algorithm has internal state that changes step by step (a recursion, a loop with accumulating data, a worklist).
+- A reader could plausibly look at the code and not be sure they could predict the output without simulating it.
+
+**Don't** use a trace block for:
+
+- API call patterns (e.g. `requests.get(...)` — there's no "trace" to show).
+- Single-step transformations (one matmul, one regex match).
+- Concepts where the *invariant* is the point and the trace would just be ceremony.
+
+### Format
+
+The trace block lives **right after the L2 code**, before L3 walkthrough. Comment it as `# trace on <small input>:` and list 3–6 numbered or stepwise lines showing the algorithm's state at meaningful checkpoints — not every line, just the steps that move the algorithm forward.
+
+### Good — quicksort
+
+```python
+def quicksort(arr, lo, hi):
+    if lo >= hi: return
+    pivot_idx = partition(arr, lo, hi)
+    quicksort(arr, lo, pivot_idx - 1)
+    quicksort(arr, pivot_idx + 1, hi)
+
+# trace on [3, 1, 4, 1, 5]:
+# call quicksort(0, 4):
+#   partition picks pivot=arr[4]=5, scans, returns idx=4 (5 is already largest)
+#   → arr = [3, 1, 4, 1, 5]  (no swaps needed)
+#   recurse on left: quicksort(0, 3) on [3, 1, 4, 1]
+#     partition picks pivot=arr[3]=1, returns idx=1
+#     → arr = [1, 1, 4, 3, 5]
+#     recurse on quicksort(0, 0) → base case
+#     recurse on quicksort(2, 3) on [4, 3]
+#       → arr = [1, 1, 3, 4, 5]
+# final: [1, 1, 3, 4, 5]
+```
+
+Notice the trace doesn't explain *every* statement — it picks the moments where the **data state** advances (after each partition call). The reader can mentally fill in the in-between.
+
+### Good — binary search
+
+```python
+def binary_search(arr, target):
+    lo, hi = 0, len(arr) - 1
+    while lo <= hi:
+        mid = lo + (hi - lo) // 2
+        if arr[mid] == target: return mid
+        if arr[mid] < target: lo = mid + 1
+        else: hi = mid - 1
+    return -1
+
+# trace on arr = [1, 3, 5, 7, 9, 11, 13], target = 7:
+# step 1: lo=0, hi=6, mid=3, arr[3]=7 → match! return 3
+#
+# trace on arr = [1, 3, 5, 7, 9, 11, 13], target = 6:
+# step 1: lo=0, hi=6, mid=3, arr[3]=7 > 6 → hi=2
+# step 2: lo=0, hi=2, mid=1, arr[1]=3 < 6 → lo=2
+# step 3: lo=2, hi=2, mid=2, arr[2]=5 < 6 → lo=3
+# step 4: lo=3, hi=2 → exit loop, return -1
+```
+
+Two traces — one for the easy case (hit on first step) and one for the search-and-miss case. **Showing both gives the reader the full picture of behavior**. One trace might leave them unsure whether the algorithm handles the miss case correctly.
+
+### Bad
+
+- Tracing every line. The trace becomes a transcript, not a summary.
+- Tracing on an input large enough that you give up halfway. Pick small inputs (5–10 elements).
+- Tracing without showing the input or final state. The reader needs to see what the algorithm started with and ended with.
+- Skipping the trace because "the code is obvious." For anything involving recursion or stateful loops, it isn't obvious — the trace is the lesson.
+
+---
+
+## 12. Working through a worked example
 
 The full template, applied to teaching the concept of **memoization** in Python.
 
