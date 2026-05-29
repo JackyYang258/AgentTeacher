@@ -11,7 +11,7 @@
       "description": "Teach a technical concept through a six-part structure: intuition, runnable example or structured pseudocode, code walkthrough, trap, pointers, and 2-3 test questions. Picks the code language per concept (Python by default; PyTorch pseudocode for architectures and training algorithms like GRPO and MoE; Rust for ownership; Go for channels). Triggers on 'explain X / what is X / teach me X / 解释 X / 教我 X / 什么是 X'.",
       "category": "education",
       "source": "./",
-      "homepage": "https://github.com/JackyYang258/AgentTeacher"
+      "homepage": "https://github.com/JackyYang258/agent-teacher"
     }
   ]
 }

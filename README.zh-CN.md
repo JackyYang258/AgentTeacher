@@ -2,8 +2,8 @@
   <h1>AgentTeacher</h1>
   <p><b>让AI做你的老师。</b></p>
   <p><a href="README.md">English</a> · <a href="README.zh-CN.md"><b>中文</b></a></p>
-  <a href="https://github.com/JackyYang258/AgentTeacher/stargazers"><img src="https://img.shields.io/github/stars/JackyYang258/AgentTeacher?style=flat-square" alt="Stars"></a>
-  <a href="https://github.com/JackyYang258/AgentTeacher/releases"><img src="https://img.shields.io/github/v/tag/JackyYang258/AgentTeacher?label=version&style=flat-square" alt="Version"></a>
+  <a href="https://github.com/JackyYang258/agent-teacher/stargazers"><img src="https://img.shields.io/github/stars/JackyYang258/agent-teacher?style=flat-square" alt="Stars"></a>
+  <a href="https://github.com/JackyYang258/agent-teacher/releases"><img src="https://img.shields.io/github/v/tag/JackyYang258/agent-teacher?label=version&style=flat-square" alt="Version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License"></a>
 </div>
 
@@ -43,25 +43,25 @@ AgentTeacher 给它一个框架：每个概念都走相同的六层骨架 ——
 **Claude Code**
 
 ```bash
-npx skills add JackyYang258/AgentTeacher -a claude-code -g -y
+npx skills add JackyYang258/agent-teacher -a claude-code -g -y
 ```
 
 **Claude Code 插件市场**（需要 Claude Code v2.1.142+）
 
 ```bash
-/plugin marketplace add JackyYang258/AgentTeacher
+/plugin marketplace add JackyYang258/agent-teacher
 /plugin install agent-teacher@agent-teacher
 ```
 
 **通用 agent**（Codex、OpenCode、Pi 等读取 `~/.agents/` 的工具）
 
 ```bash
-npx skills add JackyYang258/AgentTeacher -a '*' -g -y
+npx skills add JackyYang258/agent-teacher -a '*' -g -y
 ```
 
 **Claude Desktop**
 
-下载 [agent-teacher.zip](https://github.com/JackyYang258/AgentTeacher/releases/latest/download/agent-teacher.zip)，打开 Customize > Skills > "+" > Create skill，直接上传 ZIP（不需要解压）。ZIP 大约 50KB。
+下载 [agent-teacher.zip](https://github.com/JackyYang258/agent-teacher/releases/latest/download/agent-teacher.zip)，打开 Customize > Skills > "+" > Create skill，直接上传 ZIP（不需要解压）。ZIP 大约 50KB。
 
 **本地开发**
 

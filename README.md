@@ -2,8 +2,8 @@
   <h1>AgentTeacher</h1>
   <p><b>Let AI be your teacher</b></p>
   <p><a href="README.md"><b>English</b></a> · <a href="README.zh-CN.md">中文</a></p>
-  <a href="https://github.com/JackyYang258/AgentTeacher/stargazers"><img src="https://img.shields.io/github/stars/JackyYang258/AgentTeacher?style=flat-square" alt="Stars"></a>
-  <a href="https://github.com/JackyYang258/AgentTeacher/releases"><img src="https://img.shields.io/github/v/tag/JackyYang258/AgentTeacher?label=version&style=flat-square" alt="Version"></a>
+  <a href="https://github.com/JackyYang258/agent-teacher/stargazers"><img src="https://img.shields.io/github/stars/JackyYang258/agent-teacher?style=flat-square" alt="Stars"></a>
+  <a href="https://github.com/JackyYang258/agent-teacher/releases"><img src="https://img.shields.io/github/v/tag/JackyYang258/agent-teacher?label=version&style=flat-square" alt="Version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="License"></a>
 </div>
 
@@ -43,25 +43,25 @@ Each answer comes with a lightweight pseudocode file ([`grpo-pseudocode.py`](ass
 **Claude Code**
 
 ```bash
-npx skills add JackyYang258/AgentTeacher -a claude-code -g -y
+npx skills add JackyYang258/agent-teacher -a claude-code -g -y
 ```
 
 **Claude Code plugin marketplace** (requires Claude Code v2.1.142+)
 
 ```bash
-/plugin marketplace add JackyYang258/AgentTeacher
+/plugin marketplace add JackyYang258/agent-teacher
 /plugin install agent-teacher@agent-teacher
 ```
 
 **Generic agents** (Codex, OpenCode, Pi, and other tools that read from `~/.agents/`)
 
 ```bash
-npx skills add JackyYang258/AgentTeacher -a '*' -g -y
+npx skills add JackyYang258/agent-teacher -a '*' -g -y
 ```
 
 **Claude Desktop**
 
-Download [agent-teacher.zip](https://github.com/JackyYang258/AgentTeacher/releases/latest/download/agent-teacher.zip), open Customize > Skills > "+" > Create skill, and upload the ZIP directly (no need to unzip). The ZIP is ~45KB.
+Download [agent-teacher.zip](https://github.com/JackyYang258/agent-teacher/releases/latest/download/agent-teacher.zip), open Customize > Skills > "+" > Create skill, and upload the ZIP directly (no need to unzip). The ZIP is ~45KB.
 
 **Local development**
 
